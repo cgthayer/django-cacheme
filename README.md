@@ -48,14 +48,14 @@ class BookSerializer(object):
 ```
 
 So for example we have a book, id is 100, and a user, id is 200. And we want to cache
-book owner data in serializer. So the cache key will be "Book:100>owner", "Book:100" as key, and
+book owner data in serializer. So the cache key will be `Book:100>owner`, "Book:100" as key, and
 "owner" as field in redis.
 
-Invalid key will be "User:200:invalid", the ":invalid" suffix is auto added. And the redis data type
-of this key is set. The "Book:100>owner" key will be stored under this invalid key.
+Invalid key will be `User:200:invalid`, the ":invalid" suffix is auto added. And the redis data type
+of this key is set. The `Book:100>owner` key will be stored under this invalid key.
 
 Finally, if we change book 100 in django, the post save signal is triggered, and we get the invalid
-key from cache_key property: "Book:100:invalid" (":invalid" is added automatically), and remove all
+key from cache_key property: `Book:100:invalid` (":invalid" is added automatically), and remove all
 members from this key.
 
 ## Introduction
