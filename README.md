@@ -1,9 +1,10 @@
 # Django-Cacheme
 
-Django-Cacheme is a package to cache Django data(for example: api json results), all you need is to
-provide key, invalid rules, and models to connect signal. Support redis only now.
+Django-Cacheme is a package to cache data in Django, especially api results.
+All you need is a cache key, invalid rules, and models to connect signal.
+Support redis only.
 
-## Example:
+## Getting started
 
 #### Cache in Django, we use model signals for invalidation:
 
@@ -54,25 +55,14 @@ Invalid key will be "User:200:invalid", the ":invalid" suffix is auto added. And
 of this key is set. The "Book:100>owner" key will be stored under this invalid key.
 
 Finally, if we change book 100 in django, the post save signal is triggered, and we get the invalid
-key from cache_key property: "Book:100:invalid" (":invalid" is added automatically), and just remove
-all members from this key.
-
-#### You can also cache just Python functions:
-
-```
-from django_cacheme import cacheme
-
-@cacheme(key=lambda c: c.name)
-def (name):
-    return len(name)
-
-```
+key from cache_key property: "Book:100:invalid" (":invalid" is added automatically), and remove all
+members from this key.
 
 ## Introduction
 
-There are packages automatically cache Django queries, they are simple to use, but given
-the fact that cache is very complicated, the automatic way may cause problems. Also, query
-is one line code, we can't do a lot on that, so sometimes need to find another way.
+Some packages automatically cache Django queries, they are simple to use, but given
+the fact that cache is very complicated, the automatic way may cause problems. Also, query in Django
+is just one line code, we can't do a lot on that, so sometimes need to find another way.
 
 One solution is not cache the original query, but cache the final results we want, for example
 the api results. This can give us more flexibility.
@@ -99,7 +89,7 @@ each `get` separately, when author is changed, only author part is invalid, othe
 working. 
 
 
-## Usage
+## How to use
 
 We need to define three things when init the decorator.
 
@@ -127,8 +117,5 @@ part is the key name, and the second part is the field name.
 contains the args and kwargs for you function. For example, if your function is `def func(a, b, **kwargs)`,
 then you can access `a` and `b` in your callable by `container.a`, `container.b`, also `container.kwargs`
 
-## Todo:
-
-* Add more validations and logs
-
-* Improve doc and tests
+* if code is changed, developer should check if cache should invalid or not, for example you add some
+fields to json, then cache for that json should be invalid, there is no signal for this, so do it manually
