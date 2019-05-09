@@ -52,3 +52,9 @@ def flat_list(li):
         else:
             result.append(e)
     return result
+
+
+def invalid_pattern(pattern):
+    conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
+    keys = list(conn.scan_iter(pattern))
+    conn.unlink(*keys)
