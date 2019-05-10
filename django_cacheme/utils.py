@@ -54,7 +54,18 @@ def flat_list(li):
     return result
 
 
+def chunk_iter(iterator, size, stop):
+    while True:
+        result = {next(iterator, stop) for i in range(size)}
+        if stop in result:
+            result.remove(stop)
+            yield result
+            break
+        yield result
+
+
 def invalid_pattern(pattern):
     conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
-    keys = list(conn.scan_iter(pattern))
-    conn.unlink(*keys)
+    chunks = chunk_iter(conn.scan_iter(pattern), 500, None)
+    for keys in chunks:
+        conn.unlink(*list(keys))
