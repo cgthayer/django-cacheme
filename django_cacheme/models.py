@@ -1,109 +1,18 @@
-import pickle
-
-from django.db.models.signals import m2m_changed, post_delete, post_save
-from django_redis import get_redis_connection
-from inspect import _signature_from_function, Signature
-
-from .utils import split_key, invalid_cache, flat_list, CACHEME
+from django.db import models
+from django.utils import timezone
+from django.contrib.auth.models import User
+from .utils import invalid_pattern
 
 
-class CacheMe(object):
-    key_prefix = CACHEME.REDIS_CACHE_PREFIX
+class Invalidation(models.Model):
+    user = models.ForeignKey(User)
+    pattern = models.CharField(max_length=200)
+    created = models.DateTimeField(default=timezone.now)
 
-    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], override=None):
-        self.key = key
-        self.invalid_keys = invalid_keys
-        self.invalid_models = invalid_models
-        self.invalid_m2m_models = invalid_m2m_models
-        self.override = override
+    def __str__(self):
+        return self.pattern
 
-        self.conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
-        self.link()
-
-    def __call__(self, func):
-
-        self.function = func
-
-        def wrapper(*args, **kwargs):
-            if not CACHEME.ENABLE_CACHE:
-                return self.function(*args, **kwargs)
-
-            # bind args and kwargs to true function params
-            signature = _signature_from_function(Signature, func)
-            bind = signature.bind(*args, **kwargs)
-            bind.apply_defaults()
-
-            container = type('Container', (), bind.arguments)
-
-            key = self.key_prefix + self.key(container)
-            result = self.get_key(key)
-
-            if result is None:
-                result = self.function(*args, **kwargs)
-                if self.override and self.override(container):
-                    okey = self.override(container)
-                    okey = CACHEME.REDIS_CACHE_PREFIX + okey
-                    self.set_key(key, {'redis_key': okey})
-                    self.set_key(okey, result)
-                else:
-                    self.set_key(key, result)
-                self.add_to_invalid_list(key, container, args, kwargs)
-            elif type(result) != int and 'redis_key' in result:
-                result = self.get_key(result['redis_key'])
-                if result is None:
-                    result = self.function(*args, **kwargs)
-                    self.set_key(self.get_key(result['redis_key']), result)
-            else:
-                result = result
-
-            return result
-
-        return wrapper
-
-    def get_key(self, key):
-        key, field = split_key(key)
-        result = self.conn.hget(key, field)
-
-        if result:
-            result = pickle.loads(result)
-        return result
-
-    def set_key(self, key, value):
-        value = pickle.dumps(value)
-        key, field = split_key(key)
-        return self.conn.hset(key, field, value)
-
-    def push_key(self, key, value):
-        return self.conn.sadd(key, value)
-
-    def add_to_invalid_list(self, key, container, args, kwargs):
-        invalid_keys = self.invalid_keys
-
-        if not invalid_keys:
-            return
-
-        invalid_keys = invalid_keys(container)
-        invalid_keys = flat_list(invalid_keys)
-        for invalid_key in set(filter(lambda x: x is not None, invalid_keys)):
-            invalid_key += ':invalid'
-            invalid_key = self.key_prefix + invalid_key
-            self.push_key(invalid_key, key)
-
-    def link(self):
-        models = self.invalid_models
-        m2m_models = self.invalid_m2m_models
-
-        if not models:
-            return
-
-        for model in models:
-            post_save.connect(invalid_cache, model)
-            post_delete.connect(invalid_cache, model)
-
-        if not m2m_models:
-            return
-
-        for model in m2m_models:
-            post_save.connect(invalid_cache, model)
-            post_delete.connect(invalid_cache, model)
-            m2m_changed.connect(invalid_cache, model)
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            invalid_pattern(self.pattern)
+        super().save(*args, **kwargs)
