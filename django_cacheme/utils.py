@@ -68,4 +68,5 @@ def invalid_pattern(pattern):
     conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
     chunks = chunk_iter(conn.scan_iter(pattern), 500, None)
     for keys in chunks:
-        conn.unlink(*list(keys))
+        if keys:
+            conn.unlink(*list(keys))
