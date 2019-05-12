@@ -119,3 +119,5 @@ then you can access `a` and `b` in your callable by `container.a`, `container.b`
 
 * if code is changed, developer should check if cache should invalid or not, for example you add some
 fields to json, then cache for that json should be invalid, there is no signal for this, so do it manually
+* also provide a simple admin page for invalidation pattern, just add this to your Django apps, and migrate,
+then create validations in admin. Syntax is same as redis scan patterns, for example, "*" means remove all.
