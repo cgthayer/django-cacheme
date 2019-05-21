@@ -1,8 +1,7 @@
 language: python
 cache: pip
 python:
-- '3.5'
-- '3.7'
+- 3.5
 
 env:
 - DJANGO="django>=1.11.0,<1.12.0"
