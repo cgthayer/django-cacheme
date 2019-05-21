@@ -5,7 +5,7 @@ from .utils import invalid_pattern
 
 
 class Invalidation(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     pattern = models.CharField(max_length=200)
     created = models.DateTimeField(default=timezone.now)
 
