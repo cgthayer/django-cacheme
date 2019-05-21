@@ -32,6 +32,7 @@ script:
 - coverage run --rcfile=.coveragerc runtests.py
 
 after_success:
+- coverage report
 - codecov
 
 branches:
