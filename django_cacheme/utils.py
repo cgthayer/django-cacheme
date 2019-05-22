@@ -4,6 +4,7 @@ from django_redis import get_redis_connection
 
 CACHEME = {
     'REDIS_CACHE_PREFIX': 'CM',  # key prefix for cache
+    'REDIS_CACHE_SCAN_COUNT': 10
 }
 
 CACHEME.update(getattr(settings, 'CACHEME', {}))
@@ -66,7 +67,7 @@ def chunk_iter(iterator, size, stop):
 
 def invalid_pattern(pattern):
     conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
-    chunks = chunk_iter(conn.scan_iter(pattern, count=500), 500, None)
+    chunks = chunk_iter(conn.scan_iter(pattern, count=CACHEME.REDIS_CACHE_SCAN_COUNT), 500, None)
     for keys in chunks:
         if keys:
             conn.unlink(*list(keys))
