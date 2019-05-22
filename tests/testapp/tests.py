@@ -63,6 +63,13 @@ class CacheTestCase(TestCase):
         # user1 signal triggered, so cache invalid now
         user1.name += 'cc'
         user1.save()
+
+        # lazy invalid, so if we get value directly, still old value
+        result = conn.hget(settings.CACHEME['REDIS_CACHE_PREFIX'] + 'Test:123', 'base')
+        self.assertEqual(pickle.loads(result), expect)
+        deletes = conn.smembers(settings.CACHEME['REDIS_CACHE_PREFIX'] + ':delete')
+        self.assertTrue(b'TEST:Test:123' in deletes)
+
         expect['check'] = 2
         result = self.cache_test_func1(user1, user2)
         self.assertEqual(result, expect)
@@ -96,11 +103,11 @@ class CacheTestCase(TestCase):
 
         user1.name += 'cc'
         user1.save()
-        expect['check'] = 2
         conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
         result = conn.hget(settings.CACHEME['REDIS_CACHE_PREFIX'] + 'Test:456', 'base')
-        self.assertEqual(result, None)
+        self.assertEqual(pickle.loads(result), {'redis_key': 'TEST:User:%s' % user2.id})
 
+        expect['check'] = 2
         result = self.cache_test_func2(user1, user2)
         self.assertEqual(result, expect)
 

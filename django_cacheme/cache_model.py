@@ -9,6 +9,7 @@ from .utils import split_key, invalid_cache, flat_list, CACHEME
 
 class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
+    deleted = key_prefix + ':delete'
 
     def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], override=None):
         self.key = key
@@ -36,17 +37,18 @@ class CacheMe(object):
             container = type('Container', (), bind.arguments)
 
             key = self.key_prefix + self.key(container)
+
+            if self.conn.srem(self.deleted, key):
+                result = self.function(*args, **kwargs)
+                self.set_result(container, key, result)
+                self.add_to_invalid_list(key, container, args, kwargs)
+                return result
+
             result = self.get_key(key)
 
             if result is None:
                 result = self.function(*args, **kwargs)
-                if self.override and self.override(container):
-                    okey = self.override(container)
-                    okey = CACHEME.REDIS_CACHE_PREFIX + okey
-                    self.set_key(key, {'redis_key': okey})
-                    self.set_key(okey, result)
-                else:
-                    self.set_key(key, result)
+                self.set_result(container, key, result)
                 self.add_to_invalid_list(key, container, args, kwargs)
             elif type(result) != int and 'redis_key' in result:
                 result = self.get_key(result['redis_key'])
@@ -59,6 +61,15 @@ class CacheMe(object):
             return result
 
         return wrapper
+
+    def set_result(self, container, key, result):
+        if self.override and self.override(container):
+            okey = self.override(container)
+            okey = CACHEME.REDIS_CACHE_PREFIX + okey
+            self.set_key(key, {'redis_key': okey})
+            self.set_key(okey, result)
+        else:
+            self.set_key(key, result)
 
     def get_key(self, key):
         key, field = split_key(key)
