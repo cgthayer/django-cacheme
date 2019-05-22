@@ -37,8 +37,7 @@ def invalid_cache(sender, instance, created=False, **kwargs):
             key = CACHEME.REDIS_CACHE_PREFIX + key + ':invalid'
             invalid_keys = conn.smembers(key)
             if invalid_keys:
-                for key in invalid_keys:
-                    conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', key)
+                conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', *invalid_keys)
 
 
 def flat_list(li):
