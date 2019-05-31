@@ -2,6 +2,7 @@ import pickle
 import datetime
 import logging
 
+from functools import wraps
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django_redis import get_redis_connection
 from inspect import _signature_from_function, Signature
@@ -30,6 +31,7 @@ class CacheMe(object):
 
         self.function = func
 
+        @wraps(func)
         def wrapper(*args, **kwargs):
             if not CACHEME.ENABLE_CACHE:
                 return self.function(*args, **kwargs)
