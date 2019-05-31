@@ -1,10 +1,15 @@
 import pickle
+import datetime
+import logging
 
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django_redis import get_redis_connection
 from inspect import _signature_from_function, Signature
 
 from .utils import split_key, invalid_cache, flat_list, CACHEME
+
+
+logger = logging.getLogger('cacheme')
 
 
 class CacheMe(object):
@@ -47,13 +52,13 @@ class CacheMe(object):
             result = self.get_key(key)
 
             if result is None:
-                result = self.function(*args, **kwargs)
+                result = self.get_result_from_func(args, kwargs, key)
                 self.set_result(container, key, result)
                 self.add_to_invalid_list(key, container, args, kwargs)
             elif type(result) != int and 'redis_key' in result:
                 result = self.get_key(result['redis_key'])
                 if result is None:
-                    result = self.function(*args, **kwargs)
+                    result = self.get_result_from_func(args, kwargs, key)
                     self.set_key(self.get_key(result['redis_key']), result)
             else:
                 result = result
@@ -61,6 +66,16 @@ class CacheMe(object):
             return result
 
         return wrapper
+
+    def get_result_from_func(self, args, kwargs, key):
+        start = datetime.datetime.now()
+        result = self.function(*args, **kwargs)
+        end = datetime.datetime.now()
+        delta = (end - start).total_seconds() * 1000
+        logger.debug(
+            '[CACHEME FUNC LOG] key: "%s", time: %s ms' % (key, delta)
+        )
+        return result
 
     def set_result(self, container, key, result):
         if self.override and self.override(container):
