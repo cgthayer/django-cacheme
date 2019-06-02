@@ -41,22 +41,22 @@ class CacheMe(object):
             bind = signature.bind(*args, **kwargs)
             bind.apply_defaults()
 
-            container = type('Container', (), bind.arguments)
+            self.container = type('Container', (), bind.arguments)
 
-            key = self.key_prefix + self.key(container)
+            key = self.key_prefix + self.key(self.container)
 
             if self.conn.srem(self.deleted, key):
                 result = self.function(*args, **kwargs)
-                self.set_result(container, key, result)
-                self.add_to_invalid_list(key, container, args, kwargs)
+                self.set_result(key, result)
+                self.add_to_invalid_list(key, args, kwargs)
                 return result
 
             result = self.get_key(key)
 
             if result is None:
                 result = self.get_result_from_func(args, kwargs, key)
-                self.set_result(container, key, result)
-                self.add_to_invalid_list(key, container, args, kwargs)
+                self.set_result(key, result)
+                self.add_to_invalid_list(key, args, kwargs)
             elif type(result) != int and 'redis_key' in result:
                 result = self.get_key(result['redis_key'])
                 if result is None:
@@ -79,9 +79,9 @@ class CacheMe(object):
         )
         return result
 
-    def set_result(self, container, key, result):
-        if self.override and self.override(container):
-            okey = self.override(container)
+    def set_result(self, key, result):
+        if self.override and self.override(self.container):
+            okey = self.override(self.container)
             okey = CACHEME.REDIS_CACHE_PREFIX + okey
             self.set_key(key, {'redis_key': okey})
             self.set_key(okey, result)
@@ -104,13 +104,13 @@ class CacheMe(object):
     def push_key(self, key, value):
         return self.conn.sadd(key, value)
 
-    def add_to_invalid_list(self, key, container, args, kwargs):
+    def add_to_invalid_list(self, key, args, kwargs):
         invalid_keys = self.invalid_keys
 
         if not invalid_keys:
             return
 
-        invalid_keys = invalid_keys(container)
+        invalid_keys = invalid_keys(self.container)
         invalid_keys = flat_list(invalid_keys)
         for invalid_key in set(filter(lambda x: x is not None, invalid_keys)):
             invalid_key += ':invalid'
