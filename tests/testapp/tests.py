@@ -1,6 +1,7 @@
 import pickle
 
 import redis
+from unittest.mock import MagicMock
 from django.conf import settings
 from django.test import TestCase
 from django_redis import get_redis_connection
@@ -9,6 +10,10 @@ from .models import TestUser
 from django_cacheme import cacheme
 
 r = redis.Redis()
+
+
+hit = MagicMock()
+miss = MagicMock()
 
 
 class CacheTestCase(TestCase):
@@ -118,3 +123,19 @@ class CacheTestCase(TestCase):
         conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
         result = conn.hget(settings.CACHEME['REDIS_CACHE_PREFIX'] + '20', 'base')
         self.assertEqual(pickle.loads(result), 20)
+
+    @cacheme(
+        key=lambda c: "Test:123",
+        hit=hit,
+        miss=miss
+    )
+    def cache_test_func_hit_miss(self):
+        return 'test'
+
+    def test_cache_hit_miss(self):
+        self.cache_test_func_hit_miss()
+        miss.assert_called_once()
+        hit.assert_not_called()
+        self.cache_test_func_hit_miss()
+        miss.assert_called_once()
+        hit.assert_called_once()

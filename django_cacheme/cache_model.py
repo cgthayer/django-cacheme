@@ -17,12 +17,14 @@ class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
     deleted = key_prefix + ':delete'
 
-    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], override=None):
+    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], override=None, hit=None, miss=None):
         self.key = key
         self.invalid_keys = invalid_keys
         self.invalid_models = invalid_models
         self.invalid_m2m_models = invalid_m2m_models
         self.override = override
+        self.hit = hit
+        self.miss = miss
 
         self.conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
         self.link()
@@ -63,6 +65,8 @@ class CacheMe(object):
                     result = self.get_result_from_func(args, kwargs, key)
                     self.set_key(self.get_key(result['redis_key']), result)
             else:
+                if self.hit:
+                    self.hit(key, result, self.container)
                 result = result
 
             return result
@@ -70,6 +74,9 @@ class CacheMe(object):
         return wrapper
 
     def get_result_from_func(self, args, kwargs, key):
+        if self.miss:
+            self.miss(key, self.container)
+
         start = datetime.datetime.now()
         result = self.function(*args, **kwargs)
         end = datetime.datetime.now()
