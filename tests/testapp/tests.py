@@ -134,8 +134,8 @@ class CacheTestCase(TestCase):
 
     def test_cache_hit_miss(self):
         self.cache_test_func_hit_miss()
-        miss.assert_called_once()
+        self.assertEqual(miss.call_count, 1)
         hit.assert_not_called()
         self.cache_test_func_hit_miss()
-        miss.assert_called_once()
-        hit.assert_called_once()
+        self.assertEqual(miss.call_count, 1)
+        self.assertEqual(hit.call_count, 1)
