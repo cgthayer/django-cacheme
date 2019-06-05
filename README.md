@@ -8,7 +8,20 @@ Support redis only.
 
 ## Getting started
 
-#### Cache in Django, we use model signals for invalidation:
+Add 'django_cacheme' to your INSTALLED_APPS
+
+Update your Django settings:
+```
+CACHEME = {
+    'ENABLE_CACHE': True,
+    'REDIS_CACHE_ALIAS': 'cacheme',  # your CACHES alias name in settings, optional, 'default' as default
+    'REDIS_CACHE_PREFIX': 'MYCACHE:' # cacheme key prefix, optional, 'CM:' as default 
+}
+```
+
+Finally run migration before use
+
+## Example
 
 models.py
 
@@ -93,7 +106,7 @@ working.
 
 ## How to use
 
-We need to define three things when init the decorator.
+Cacheme need three things when init the decorator.
 
 * key: Callable, required. The func to generate the cache key, will call this func when the key is needed.
 
