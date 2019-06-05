@@ -18,8 +18,6 @@ class CacheMe(object):
     deleted = key_prefix + ':delete'
 
     def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], override=None, hit=None, miss=None):
-        if not CACHEME.ENABLE_CACHE:
-            return
         self.key = key
         self.invalid_keys = invalid_keys
         self.invalid_models = invalid_models
