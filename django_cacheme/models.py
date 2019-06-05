@@ -5,7 +5,7 @@ from .utils import invalid_pattern, CACHEME
 
 
 def default_pattern():
-    return CACHEME.REDIS_CACHE_PREFIX + ':'
+    return CACHEME.REDIS_CACHE_PREFIX
 
 
 class Invalidation(models.Model):
