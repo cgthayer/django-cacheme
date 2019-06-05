@@ -117,7 +117,9 @@ part is the key name, and the second part is the field name.
 
 * key and invalid_keys callable: the first argument in the callable is the container, this container
 contains the args and kwargs for you function. For example, if your function is `def func(a, b, **kwargs)`,
-then you can access `a` and `b` in your callable by `container.a`, `container.b`, also `container.kwargs`
+then you can access `a` and `b` in your callable by `container.a`, `container.b`, also `container.kwargs`.
+
+* For invalid_keys callable, you can aslo get your function result through `container.cacheme_result`, so you can invalid based on this result.
 
 * if code is changed, developer should check if cache should invalid or not, for example you add some
 fields to json, then cache for that json should be invalid, there is no signal for this, so do it manually
