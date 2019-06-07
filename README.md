@@ -121,6 +121,10 @@ keys in that invalid key will be invalid.
 signal, every model must has an invalid_key property(can be a list), and m2m model need to have a suffix.
 And when signal is called, all members in the model instance invalid key will be removed.
 
+* hit: callback when cache hit, need 3 arguments `(key, result, container)`
+
+* miss: callback when cache miss, need 2 arguments `(key, container)`
+
 And an optional override_func:
 
 * override: Callable or None, default None. Used to store another key in this key_func.
