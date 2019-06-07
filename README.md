@@ -108,7 +108,7 @@ working.
 
 ## How to use
 
-Cacheme need three things when init the decorator.
+Cacheme need five params when init the decorator.
 
 * key: Callable, required. The func to generate the cache key, will call this func when the key is needed.
 
