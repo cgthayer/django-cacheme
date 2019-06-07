@@ -8,6 +8,8 @@ Support redis only.
 
 ## Getting started
 
+`pip install django-cacheme`
+
 Add 'django_cacheme' to your INSTALLED_APPS
 
 Update your Django settings:
