@@ -128,9 +128,9 @@ And when signal is called, all members in the model instance invalid key will be
 * name: string, default func name. using name to get cache instance, then get all keys generated.
 
 ```
-from cacheme import instances
+from cacheme import cacheme_instances
 
-instance = instances[name]
+instance = cacheme_instances[name]
 
 # get all keys
 keys = instance.keys

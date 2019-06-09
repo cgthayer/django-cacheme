@@ -7,7 +7,7 @@ from django.test import TestCase
 from django_redis import get_redis_connection
 
 from .models import TestUser
-from django_cacheme import cacheme, instances
+from django_cacheme import cacheme, cacheme_instances
 
 r = redis.Redis()
 
@@ -164,6 +164,6 @@ class CacheTestCase(TestCase):
         self.cache_inst_1()
         self.cache_inst_2()
         self.cache_inst_3()
-        self.assertEqual(instances['cache_inst_1'].keys, {b'TEST:INST:1'})
-        self.assertEqual(instances['test_instance_sec'].keys, {b'TEST:INST:2'})
-        self.assertEqual(instances['three'].keys, {b'TEST:INST:3'})
+        self.assertEqual(cacheme_instances['cache_inst_1'].keys, {b'TEST:INST:1'})
+        self.assertEqual(cacheme_instances['test_instance_sec'].keys, {b'TEST:INST:2'})
+        self.assertEqual(cacheme_instances['three'].keys, {b'TEST:INST:3'})

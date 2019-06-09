@@ -12,7 +12,7 @@ from .utils import split_key, invalid_cache, flat_list, CACHEME
 
 logger = logging.getLogger('cacheme')
 
-instances = dict()
+cacheme_instances = dict()
 
 
 class CacheMe(object):
@@ -39,7 +39,7 @@ class CacheMe(object):
         self.function = func
 
         self.name = self.name or func.__name__
-        instances[self.name] = self
+        cacheme_instances[self.name] = self
 
         @wraps(func)
         def wrapper(*args, **kwargs):

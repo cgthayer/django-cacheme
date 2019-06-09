@@ -1,1 +1,1 @@
-from .cache_model import instances, CacheMe as cacheme
+from .cache_model import cacheme_instances, CacheMe as cacheme
