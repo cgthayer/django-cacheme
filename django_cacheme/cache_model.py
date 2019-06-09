@@ -84,11 +84,11 @@ class CacheMe(object):
 
     @property
     def keys(self):
-        return self.conn.smembers(self.name)
+        return self.conn.smembers(CACHEME.REDIS_CACHE_PREFIX + self.name)
 
     @keys.setter
     def keys(self, val):
-        self.conn.sadd(self.name, val)
+        self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + self.name, val)
 
     def get_result_from_func(self, args, kwargs, key):
         if self.miss:
