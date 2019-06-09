@@ -7,7 +7,7 @@ from django.test import TestCase
 from django_redis import get_redis_connection
 
 from .models import TestUser
-from django_cacheme import cacheme
+from django_cacheme import cacheme, instances
 
 r = redis.Redis()
 
@@ -139,3 +139,31 @@ class CacheTestCase(TestCase):
         self.cache_test_func_hit_miss()
         self.assertEqual(miss.call_count, 1)
         self.assertEqual(hit.call_count, 1)
+
+    @cacheme(
+        key=lambda c: "INST:1"
+    )
+    def cache_inst_1(self):
+        return 'test'
+
+    @cacheme(
+        key=lambda c: "INST:2",
+        name='test_instance_sec'
+    )
+    def cache_inst_2(self):
+        return 'test'
+
+    @cacheme(
+        key=lambda c: "INST:3",
+        name='three'
+    )
+    def cache_inst_3(self):
+        return 'test'
+
+    def test_instances(self):
+        self.cache_inst_1()
+        self.cache_inst_2()
+        self.cache_inst_3()
+        self.assertEqual(instances['cache_inst_1'].keys, {b'TEST:INST:1'})
+        self.assertEqual(instances['test_instance_sec'].keys, {b'TEST:INST:2'})
+        self.assertEqual(instances['three'].keys, {b'TEST:INST:3'})
