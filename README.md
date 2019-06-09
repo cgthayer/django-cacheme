@@ -108,7 +108,7 @@ working.
 
 ## How to use
 
-Cacheme need five params when init the decorator.
+Cacheme need following params when init the decorator.
 
 * key: Callable, required. The func to generate the cache key, will call this func when the key is needed.
 
@@ -124,6 +124,17 @@ And when signal is called, all members in the model instance invalid key will be
 * hit: callback when cache hit, need 3 arguments `(key, result, container)`
 
 * miss: callback when cache miss, need 2 arguments `(key, container)`
+
+* name: string, default func name. using name to get cache instance, then get all keys generated.
+
+```
+from cacheme import instances
+
+instance = instances[name]
+
+# get all keys
+keys = instance.keys
+```
 
 And an optional override_func:
 
