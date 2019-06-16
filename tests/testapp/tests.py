@@ -8,6 +8,7 @@ from django_redis import get_redis_connection
 
 from .models import TestUser
 from django_cacheme import cacheme, cacheme_tags
+from django_cacheme.models import Invalidation
 
 r = redis.Redis()
 
@@ -128,3 +129,19 @@ class CacheTestCase(TestCase):
         self.assertEqual(cacheme_tags['cache_inst_1'].keys, {b'TEST:INST:1'})
         self.assertEqual(cacheme_tags['test_instance_sec'].keys, {b'TEST:INST:2'})
         self.assertEqual(cacheme_tags['three'].keys, {b'TEST:INST:3'})
+
+    def test_invalidation_model(self):
+        conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
+        conn.set('TEST:PATTERN:1', 1)
+        conn.set('TEST:PATTERN:2', 2)
+        conn.set('TEST:ANOTHER:3', 3)
+
+        self.assertEqual(conn.get('TEST:PATTERN:1'), b'1')
+        self.assertEqual(conn.get('TEST:PATTERN:2'), b'2')
+        self.assertEqual(conn.get('TEST:ANOTHER:3'), b'3')
+
+        Invalidation.objects.create(pattern='TEST:PATTERN*')
+
+        self.assertEqual(conn.get('TEST:PATTERN:1'), None)
+        self.assertEqual(conn.get('TEST:PATTERN:2'), None)
+        self.assertEqual(conn.get('TEST:ANOTHER:3'), b'3')
