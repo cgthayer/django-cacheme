@@ -134,15 +134,9 @@ class CacheMe(object):
         models = self.invalid_models
         m2m_models = self.invalid_m2m_models
 
-        if not models:
-            return
-
         for model in models:
             post_save.connect(invalid_cache, model)
             post_delete.connect(invalid_cache, model)
-
-        if not m2m_models:
-            return
 
         for model in m2m_models:
             post_save.connect(invalid_cache, model)

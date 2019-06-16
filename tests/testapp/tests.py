@@ -6,7 +6,7 @@ from django.conf import settings
 from django.test import TestCase
 from django_redis import get_redis_connection
 
-from .models import TestUser
+from .models import TestUser, Book
 from django_cacheme import cacheme, cacheme_tags
 from django_cacheme.models import Invalidation
 
@@ -101,6 +101,26 @@ class CacheTestCase(TestCase):
         self.cache_test_func_hit_miss()
         self.assertEqual(miss.call_count, 1)
         self.assertEqual(hit.call_count, 1)
+
+    @cacheme(
+        key=lambda c: "Test:m2m",
+        invalid_keys=lambda c: ["Book:%s:users" % c.book.id],
+        invalid_m2m_models=[Book.users.through]
+    )
+    def cache_m2m_func(self, book):
+        return {'users': [u.id for u in book.users.all()]}
+
+    def test_m2m_cache(self):
+        user1 = TestUser.objects.create(name='test1')
+        user2 = TestUser.objects.create(name='test2')
+
+        book = Book.objects.create(name='book')
+        book.users.add(user1, user2)
+        result = self.cache_m2m_func(book)
+        self.assertEqual(result, {'users': [user1.id, user2.id]})
+        book.users.remove(user1)
+        result = self.cache_m2m_func(book)
+        self.assertEqual(result, {'users': [user2.id]})
 
     @cacheme(
         key=lambda c: "INST:1"
