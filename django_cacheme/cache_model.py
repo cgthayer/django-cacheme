@@ -12,14 +12,14 @@ from .utils import split_key, invalid_cache, flat_list, CACHEME
 
 logger = logging.getLogger('cacheme')
 
-cacheme_instances = dict()
+cacheme_tags = dict()
 
 
 class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
     deleted = key_prefix + ':delete'
 
-    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], hit=None, miss=None, name=None):
+    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], hit=None, miss=None, tag=None):
         if not CACHEME.ENABLE_CACHE:
             return
         self.key = key
@@ -28,7 +28,7 @@ class CacheMe(object):
         self.invalid_m2m_models = invalid_m2m_models
         self.hit = hit
         self.miss = miss
-        self.name = name
+        self.tag = tag
 
         self.conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
         self.link()
@@ -37,8 +37,8 @@ class CacheMe(object):
 
         self.function = func
 
-        self.name = self.name or func.__name__
-        cacheme_instances[self.name] = self
+        self.tag = self.tag or func.__name__
+        cacheme_tags[self.tag] = self
 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -83,11 +83,11 @@ class CacheMe(object):
 
     @property
     def keys(self):
-        return self.conn.smembers(CACHEME.REDIS_CACHE_PREFIX + self.name)
+        return self.conn.smembers(CACHEME.REDIS_CACHE_PREFIX + self.tag)
 
     @keys.setter
     def keys(self, val):
-        self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + self.name, val)
+        self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + self.tag, val)
 
     def get_result_from_func(self, args, kwargs, key):
         if self.miss:

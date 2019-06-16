@@ -125,12 +125,12 @@ And when signal is called, all members in the model instance invalid key will be
 
 * miss: callback when cache miss, need 2 arguments `(key, container)`
 
-* name: string, default func name. using name to get cache instance, then get all keys generated.
+* tag: string, default func name. using tag to get cache instance, then get all keys under that tag.
 
 ```
-from cacheme import cacheme_instances
+from cacheme import cacheme_tags
 
-instance = cacheme_instances[name]
+instance = cacheme_tags[tag]
 
 # get all keys
 keys = instance.keys
