@@ -9,7 +9,7 @@ setup(
     url="https://github.com/Yiling-J/django-cacheme",
     author="Yiling",
     author_email="njjyl723@gmail.com",
-    version='v0.0.2',
+    version='v0.0.3',
     packages=[
         "django_cacheme",
     ],
