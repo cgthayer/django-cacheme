@@ -50,6 +50,9 @@ class CacheMe(object):
             bind = signature.bind(*args, **kwargs)
             bind.apply_defaults()
 
+            # then apply args and kwargs to a container,
+            # in this way, we can have clear lambda with just one
+            # argument, and access what we need from this container
             self.container = type('Container', (), bind.arguments)
 
             key = self.key_prefix + self.key(self.container)
