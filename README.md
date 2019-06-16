@@ -2,9 +2,7 @@
 [![Build Status](https://codecov.io/gh/Yiling-J/django-cacheme/branch/master/graph/badge.svg)](https://codecov.io/gh/Yiling-J/django-cacheme)
 # Django-Cacheme
 
-Django-Cacheme is a package to cache data in Django, especially api results.
-All you need is a cache key, invalid rules, and models to connect signal.
-Support redis only.
+Django-Cacheme is a package to cache functions in Django(memoize) using redis. You can use your function params to define cache keys, also support model signals for invalidation.
 
 ## Getting started
 
