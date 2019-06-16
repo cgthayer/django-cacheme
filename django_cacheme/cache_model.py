@@ -67,11 +67,6 @@ class CacheMe(object):
                 self.set_result(key, result)
                 self.container.cacheme_result = result
                 self.add_to_invalid_list(key, args, kwargs)
-            elif type(result) != int and 'redis_key' in result:
-                result = self.get_key(result['redis_key'])
-                if result is None:
-                    result = self.get_result_from_func(args, kwargs, key)
-                    self.set_key(self.get_key(result['redis_key']), result)
             else:
                 if self.hit:
                     self.hit(key, result, self.container)
