@@ -31,15 +31,6 @@ class CacheTestCase(TestCase):
         return {'results': [{'id': user1.id}, {'id': user2.id}], 'check': self.check}
 
     @cacheme(
-        key=lambda c: "Test:456",
-        invalid_keys=lambda c: ["User:%s" % c.user1.id],
-        invalid_models=[TestUser],
-        override=lambda c: "User:%s" % c.user2.id
-    )
-    def cache_test_func2(self, user1, user2):
-        return {'results': [{'id': user1.id}, {'id': user2.id}], 'check': self.check}
-
-    @cacheme(
         key=lambda c: str(c.self.pp + c.a + c.args[0] + c.kwargs['ff']),
     )
     def cache_bind_func(self, a, *args, **kwargs):
@@ -84,36 +75,6 @@ class CacheTestCase(TestCase):
         user2.name += 'cc'
         user2.save()
         result = self.cache_test_func1(user1, user2)
-        self.assertEqual(result, expect)
-
-    def test_cache_override(self):
-        user1 = TestUser.objects.create(name='test1')
-        user2 = TestUser.objects.create(name='test2')
-
-        self.check = 1
-
-        expect = {'results': [{'id': user1.id}, {'id': user2.id}], 'check': 1}
-
-        result = self.cache_test_func2(user1, user2)
-        self.assertEqual(result, expect)
-
-        conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
-        result = conn.hget(settings.CACHEME['REDIS_CACHE_PREFIX'] + 'Test:456', 'base')
-        self.assertEqual(pickle.loads(result), {'redis_key': 'TEST:User:%s' % user2.id})
-
-        result = conn.hget('TEST:User:%s' % user2.id, 'base')
-        self.assertEqual(pickle.loads(result), expect)
-
-        self.check = 2
-
-        user1.name += 'cc'
-        user1.save()
-        conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
-        result = conn.hget(settings.CACHEME['REDIS_CACHE_PREFIX'] + 'Test:456', 'base')
-        self.assertEqual(pickle.loads(result), {'redis_key': 'TEST:User:%s' % user2.id})
-
-        expect['check'] = 2
-        result = self.cache_test_func2(user1, user2)
         self.assertEqual(result, expect)
 
     def test_cache_arguments_bind(self):

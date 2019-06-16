@@ -136,13 +136,6 @@ instance = cacheme_instances[name]
 keys = instance.keys
 ```
 
-And an optional override_func:
-
-* override: Callable or None, default None. Used to store another key in this key_func.
-
-If there is a ">" in the key, the key will split into two parts by ">", first
-part is the key name, and the second part is the field name.
-
 ## Tips:
 
 * key and invalid_keys callable: the first argument in the callable is the container, this container

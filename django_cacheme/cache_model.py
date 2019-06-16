@@ -19,14 +19,13 @@ class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
     deleted = key_prefix + ':delete'
 
-    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], override=None, hit=None, miss=None, name=None):
+    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], hit=None, miss=None, name=None):
         if not CACHEME.ENABLE_CACHE:
             return
         self.key = key
         self.invalid_keys = invalid_keys
         self.invalid_models = invalid_models
         self.invalid_m2m_models = invalid_m2m_models
-        self.override = override
         self.hit = hit
         self.miss = miss
         self.name = name
@@ -104,13 +103,7 @@ class CacheMe(object):
         return result
 
     def set_result(self, key, result):
-        if self.override and self.override(self.container):
-            okey = self.override(self.container)
-            okey = CACHEME.REDIS_CACHE_PREFIX + okey
-            self.set_key(key, {'redis_key': okey})
-            self.set_key(okey, result)
-        else:
-            self.set_key(key, result)
+        self.set_key(key, result)
 
     def get_key(self, key):
         key, field = split_key(key)
