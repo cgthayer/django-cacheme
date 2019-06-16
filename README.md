@@ -2,9 +2,7 @@
 [![Build Status](https://codecov.io/gh/Yiling-J/django-cacheme/branch/master/graph/badge.svg)](https://codecov.io/gh/Yiling-J/django-cacheme)
 # Django-Cacheme
 
-Django-Cacheme is a package to cache data in Django, especially api results.
-All you need is a cache key, invalid rules, and models to connect signal.
-Support redis only.
+Django-Cacheme is a package to cache functions in Django(memoize) using redis. You can use your function params to define cache keys, also support model signals for invalidation.
 
 ## Getting started
 
@@ -110,22 +108,22 @@ working.
 
 Cacheme need following params when init the decorator.
 
-* key: Callable, required. The func to generate the cache key, will call this func when the key is needed.
+* `key`: Callable, required. The func to generate the cache key, will call this func when the key is needed.
 
-* invalid_keys: Callable or None, default None. an invalid key that will store this key, use redis set,
+* `invalid_keys`: Callable or None, default None. an invalid key that will store this key, use redis set,
 and the key func before will be stored in this invalid key. If using Django , this invalid
 key should be a models cache key, so when model invalid signal is called, all
 keys in that invalid key will be invalid.
 
-* invalid_models/invalid_m2m_models: List, default []. Models and m2m models that will trigger the invalid
+* `invalid_models`/`invalid_m2m_models`: List, default []. Models and m2m models that will trigger the invalid
 signal, every model must has an invalid_key property(can be a list), and m2m model need to have a suffix.
 And when signal is called, all members in the model instance invalid key will be removed.
 
-* hit: callback when cache hit, need 3 arguments `(key, result, container)`
+* `hit`: callback when cache hit, need 3 arguments `(key, result, container)`
 
-* miss: callback when cache miss, need 2 arguments `(key, container)`
+* `miss`: callback when cache miss, need 2 arguments `(key, container)`
 
-* tag: string, default func name. using tag to get cache instance, then get all keys under that tag.
+* `tag`: string, default func name. using tag to get cache instance, then get all keys under that tag.
 
 ```
 from cacheme import cacheme_tags
