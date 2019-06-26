@@ -110,6 +110,14 @@ class CacheTestCase(TestCase):
     def cache_m2m_func(self, book):
         return {'users': [u.id for u in book.users.all()]}
 
+    @cacheme(
+        key=lambda c: "Test:m2m:pks",
+        invalid_keys=lambda c: ["User:%s:books" % c.user.id],
+        invalid_m2m_models=[Book.users.through]
+    )
+    def cache_m2m_pks_func(self, user):
+        return {'books': [b.id for b in user.books.all()]}
+
     def test_m2m_cache(self):
         user1 = TestUser.objects.create(name='test1')
         user2 = TestUser.objects.create(name='test2')
@@ -118,9 +126,13 @@ class CacheTestCase(TestCase):
         book.users.add(user1, user2)
         result = self.cache_m2m_func(book)
         self.assertEqual(result, {'users': [user1.id, user2.id]})
+        result_user = self.cache_m2m_pks_func(user1)
+        self.assertEqual(result_user, {'books': [book.id]})
         book.users.remove(user1)
         result = self.cache_m2m_func(book)
         self.assertEqual(result, {'users': [user2.id]})
+        result_user = self.cache_m2m_pks_func(user1)
+        self.assertEqual(result_user, {'books': []})
 
     @cacheme(
         key=lambda c: "INST:1"

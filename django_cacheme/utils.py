@@ -18,6 +18,15 @@ def split_key(string):
     return [string, 'base']
 
 
+def invalid_keys_in_set(key, conn=None):
+    if not conn:
+        conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
+    key = CACHEME.REDIS_CACHE_PREFIX + key + ':invalid'
+    invalid_keys = conn.smembers(key)
+    if invalid_keys:
+        conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', *invalid_keys)
+
+
 def invalid_cache(sender, instance, created=False, **kwargs):
     # for manytomany pre signal, do nothing
     m2m = False
@@ -34,10 +43,12 @@ def invalid_cache(sender, instance, created=False, **kwargs):
         for key in keys:
             if m2m and sender.suffix:
                 key = key + ':' + sender.suffix
-            key = CACHEME.REDIS_CACHE_PREFIX + key + ':invalid'
-            invalid_keys = conn.smembers(key)
-            if invalid_keys:
-                conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', *invalid_keys)
+            invalid_keys_in_set(key, conn)
+
+        if m2m and getattr(sender, 'pk_set_func', None):
+            pks_keys = sender.pk_set_func(kwargs['pk_set'])
+            for key in pks_keys:
+                invalid_keys_in_set(key, conn)
 
 
 def flat_list(li):

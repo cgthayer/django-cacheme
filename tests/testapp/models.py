@@ -11,7 +11,7 @@ class TestUser(models.Model):
 
 class Book(models.Model):
     name = models.CharField(max_length=30)
-    users = models.ManyToManyField(TestUser)
+    users = models.ManyToManyField(TestUser, related_name='books')
 
     @property
     def cache_key(self):
@@ -19,3 +19,6 @@ class Book(models.Model):
 
 
 Book.users.through.suffix = 'users'
+Book.users.through.pk_set_func = lambda ids: [
+    'User:%s:books' % id for id in ids
+]
