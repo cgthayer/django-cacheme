@@ -106,6 +106,8 @@ working.
 
 ## How to use
 
+#### - Cacheme Decorator
+
 Cacheme need following params when init the decorator.
 
 * `key`: Callable, required. The func to generate the cache key, will call this func when the key is needed.
@@ -125,14 +127,28 @@ And when signal is called, all members in the model instance invalid key will be
 
 * `tag`: string, default func name. using tag to get cache instance, then get all keys under that tag.
 
-```
-from cacheme import cacheme_tags
+  ```
+  from cacheme import cacheme_tags
+  
+  instance = cacheme_tags[tag]
+  
+  # get all keys
+  keys = instance.keys
+  ```
 
-instance = cacheme_tags[tag]
+#### - Model property/attribute
 
-# get all keys
-keys = instance.keys
-```
+To make invalid signal work, you need to define property for models that connect to signals in models.py.
+As you can see in the top example, a `cache_key` property is needed. And when invalid signal is triggered,
+signal func will get this property value, add ':invalid' to it, and then invalid all keys store in this key.
+
+This is enough for simple models, but for models contain m2m field, we need some special rule. For example,
+`Book` model has a m2m field to `User`, and if we do: `book.add(user)`, We have two update, first, book.users changed,
+because a new user is add to this. Second, user.books also change, because this user has a new book.
+So if you take a look on [models.py](../master/tests/testapp/models.py), you will notice I add two attribute to m2m through class, the first one `suffix`,
+is for book.users, and the second one, `pk_set_func`, is for user.books, all need to be invalid.
+(Notice: need a better name, and support multi m2m fields)
+
 
 ## Tips:
 
