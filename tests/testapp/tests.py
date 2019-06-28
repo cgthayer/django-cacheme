@@ -107,7 +107,7 @@ class CacheTestCase(TestCase):
         invalid_keys=lambda c: ["Book:%s:users" % c.book.id],
         invalid_m2m_models=[Book.users.through]
     )
-    def cache_m2m_func(self, book):
+    def cache_m2m_left_func(self, book):
         return {'users': [u.id for u in book.users.all()]}
 
     @cacheme(
@@ -115,24 +115,40 @@ class CacheTestCase(TestCase):
         invalid_keys=lambda c: ["User:%s:books" % c.user.id],
         invalid_m2m_models=[Book.users.through]
     )
-    def cache_m2m_pks_func(self, user):
+    def cache_m2m_right_func(self, user):
         return {'books': [b.id for b in user.books.all()]}
 
-    def test_m2m_cache(self):
+    def test_m2m_cache_left(self):
         user1 = TestUser.objects.create(name='test1')
         user2 = TestUser.objects.create(name='test2')
 
         book = Book.objects.create(name='book')
         book.users.add(user1, user2)
-        result = self.cache_m2m_func(book)
+        result = self.cache_m2m_left_func(book)
         self.assertEqual(result, {'users': [user1.id, user2.id]})
-        result_user = self.cache_m2m_pks_func(user1)
+        result_user = self.cache_m2m_right_func(user1)
         self.assertEqual(result_user, {'books': [book.id]})
         book.users.remove(user1)
-        result = self.cache_m2m_func(book)
+        result = self.cache_m2m_left_func(book)
         self.assertEqual(result, {'users': [user2.id]})
-        result_user = self.cache_m2m_pks_func(user1)
+        result_user = self.cache_m2m_right_func(user1)
         self.assertEqual(result_user, {'books': []})
+
+    def test_m2m_cache_right(self):
+        user = TestUser.objects.create(name='test1')
+
+        book1 = Book.objects.create(name='book')
+        book2 = Book.objects.create(name='book2')
+        user.books.add(book1, book2)
+        result = self.cache_m2m_left_func(book1)
+        self.assertEqual(result, {'users': [user.id]})
+        result_user = self.cache_m2m_right_func(user)
+        self.assertEqual(result_user, {'books': [book1.id, book2.id]})
+        user.books.remove(book1)
+        result = self.cache_m2m_left_func(book1)
+        self.assertEqual(result, {'users': []})
+        result_user = self.cache_m2m_right_func(user)
+        self.assertEqual(result_user, {'books': [book2.id]})
 
     @cacheme(
         key=lambda c: "INST:1"

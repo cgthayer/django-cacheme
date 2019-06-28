@@ -18,7 +18,7 @@ class Book(models.Model):
         return "Book:%s" % self.id
 
 
-Book.users.through.suffix = 'users'
-Book.users.through.pk_set_func = lambda ids: [
-    'User:%s:books' % id for id in ids
-]
+Book.users.through.m2m_cache_keys = {
+    'Book': lambda ids: ['User:%s:books' % id for id in ids],
+    'TestUser': lambda ids: ['Book:%s:users' % id for id in ids],
+}

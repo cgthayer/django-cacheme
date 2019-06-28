@@ -47,18 +47,13 @@ def invalid_cache(sender, instance, created=False, **kwargs):
         for key in keys:
             invalid_keys_in_set(key, conn)
 
-    if m2m and instance.cache_key and getattr(sender, 'suffix', None):
-        keys = instance.cache_key
-        if type(instance.cache_key) == str:
-            keys = [keys]
-        for key in keys:
-            if m2m and sender.suffix:
-                key = key + ':' + sender.suffix
-            invalid_keys_in_set(key, conn)
-
-    if m2m and getattr(sender, 'pk_set_func', None):
-        pks_keys = sender.pk_set_func(kwargs['pk_set'])
-        for key in pks_keys:
+    if m2m:
+        name = instance.__class__.__name__
+        m2m_cache_keys = sender.m2m_cache_keys.copy()
+        to_invalid_keys = m2m_cache_keys.pop(name)(kwargs.get('pk_set', []))
+        from_invalid_key = list(m2m_cache_keys.values())[0]([instance.id])
+        all = from_invalid_key + to_invalid_keys
+        for key in all:
             invalid_keys_in_set(key, conn)
 
 
