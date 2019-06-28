@@ -118,7 +118,7 @@ key should be a models cache key, so when model invalid signal is called, all
 keys in that invalid key will be invalid.
 
 * `invalid_models`/`invalid_m2m_models`: List, default []. Models and m2m models that will trigger the invalid
-signal, every model must has an invalid_key property(can be a list), and m2m model need to have a suffix.
+signal, every model must has an invalid_key property(can be a list), and m2m model need m2m keys(see Model part).
 And when signal is called, all members in the model instance invalid key will be removed.
 
 * `hit`: callback when cache hit, need 3 arguments `(key, result, container)`
