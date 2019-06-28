@@ -29,14 +29,25 @@ def invalid_keys_in_set(key, conn=None):
 
 def invalid_cache(sender, instance, created=False, **kwargs):
     # for manytomany pre signal, do nothing
+    if not CACHEME.ENABLE_CACHE:
+        return
+
     m2m = False
     if 'pre_' in kwargs.get('action', ''):
         return
     if kwargs.get('action', False):
         m2m = True
 
-    if CACHEME.ENABLE_CACHE and instance.cache_key:
-        conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
+    conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
+
+    if not m2m and instance.cache_key:
+        keys = instance.cache_key
+        if type(instance.cache_key) == str:
+            keys = [keys]
+        for key in keys:
+            invalid_keys_in_set(key, conn)
+
+    if m2m and instance.cache_key and getattr(sender, 'suffix', None):
         keys = instance.cache_key
         if type(instance.cache_key) == str:
             keys = [keys]
@@ -45,10 +56,10 @@ def invalid_cache(sender, instance, created=False, **kwargs):
                 key = key + ':' + sender.suffix
             invalid_keys_in_set(key, conn)
 
-        if m2m and getattr(sender, 'pk_set_func', None):
-            pks_keys = sender.pk_set_func(kwargs['pk_set'])
-            for key in pks_keys:
-                invalid_keys_in_set(key, conn)
+    if m2m and getattr(sender, 'pk_set_func', None):
+        pks_keys = sender.pk_set_func(kwargs['pk_set'])
+        for key in pks_keys:
+            invalid_keys_in_set(key, conn)
 
 
 def flat_list(li):
