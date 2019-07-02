@@ -19,7 +19,7 @@ class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
     deleted = key_prefix + ':delete'
 
-    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], hit=None, miss=None, tag=None):
+    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], hit=None, miss=None, tag=None, skip=False):
         if not CACHEME.ENABLE_CACHE:
             return
         self.key = key
@@ -29,6 +29,7 @@ class CacheMe(object):
         self.hit = hit
         self.miss = miss
         self.tag = tag
+        self.skip = skip
 
         self.conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
         self.link()
@@ -54,6 +55,11 @@ class CacheMe(object):
             # in this way, we can have clear lambda with just one
             # argument, and access what we need from this container
             self.container = type('Container', (), bind.arguments)
+
+            if callable(self.skip) and self.skip(self.container):
+                return self.function(*args, **kwargs)
+            elif self.skip:
+                return self.function(*args, **kwargs)
 
             key = self.key_prefix + self.key(self.container)
 

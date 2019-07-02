@@ -127,6 +127,9 @@ And when signal is called, all members in the model instance invalid key will be
 
 * `tag`: string, default func name. using tag to get cache instance, then get all keys under that tag.
 
+* `skip`: boolean or callable, default False. If value or callable value return true, will skip cache. For example,
+you can cache result if request param has user, but return None directly, if no user.
+
   ```
   from cacheme import cacheme_tags
   

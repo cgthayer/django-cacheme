@@ -193,3 +193,38 @@ class CacheTestCase(TestCase):
         self.assertEqual(conn.get('TEST:PATTERN:1'), None)
         self.assertEqual(conn.get('TEST:PATTERN:2'), None)
         self.assertEqual(conn.get('TEST:ANOTHER:3'), b'3')
+
+    @cacheme(
+        key=lambda c: "CACHE:SKIP:1",
+        tag='three',
+        skip=True
+    )
+    def cache_skip_bool(self, data):
+        return {'result': data['test']}
+
+    @cacheme(
+        key=lambda c: "CACHE:SKIP:2",
+        tag='three',
+        skip=lambda c: 'skip' in c.data
+    )
+    def cache_skip_callable(self, data):
+        return {'result': data['test']}
+
+    def test_skip_cache(self):
+        result = self.cache_skip_bool({'test': 1})
+        self.assertEqual(result['result'], 1)
+
+        result = self.cache_skip_bool({'test': 2})
+        self.assertEqual(result['result'], 2)
+
+        result = self.cache_skip_callable({'test': 3})
+        self.assertEqual(result['result'], 3)
+
+        result = self.cache_skip_callable({'test': 4, 'skip': True})
+        self.assertEqual(result['result'], 4)
+
+        result = self.cache_skip_callable({'test': 5})
+        self.assertEqual(result['result'], 5)
+
+        result = self.cache_skip_callable({'test': 6})
+        self.assertEqual(result['result'], 6)
