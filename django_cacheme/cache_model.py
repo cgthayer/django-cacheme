@@ -19,7 +19,7 @@ class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
     deleted = key_prefix + ':delete'
 
-    def __init__(self, key, invalid_keys=None, invalid_models=[], invalid_m2m_models=[], hit=None, miss=None, tag=None, skip=False):
+    def __init__(self, key, invalid_keys=None, invalid_models=(), invalid_m2m_models=(), hit=None, miss=None, tag=None, skip=False):
         if not CACHEME.ENABLE_CACHE:
             return
         self.key = key
