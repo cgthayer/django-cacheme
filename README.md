@@ -143,8 +143,17 @@ you can cache result if request param has user, but return None directly, if no 
 #### - Model property/attribute
 
 To make invalid signal work, you need to define property for models that connect to signals in models.py.
-As you can see in the top example, a `cache_key` property is needed. And when invalid signal is triggered,
+As you can see in the example, a `cache_key` property is needed. And when invalid signal is triggered,
 signal func will get this property value, add ':invalid' to it, and then invalid all keys store in this key.
+
+```
+class Book(models.Model):
+	...
+	
+	@property
+	def cache_key(self):
+		return "Book:%s" % self.id
+```
 
 This is enough for simple models, but for models include m2m field, we need some special rules. For example,
 `Book` model has a m2m field to `User`, and if we do: `book.add(users)`, We have two update, first, book.users changed,
@@ -154,6 +163,16 @@ So if you take a look on [models.py](../master/tests/testapp/models.py), you wil
 that's because both `book.add()` and `user.add()` will trigger the [m2m invalid signal](https://docs.djangoproject.com/en/2.2/ref/signals/#m2m-changed), but the first one, signal `instance` will be book, and
 `pk_set` will be users ids, and the second one, signal `instance` will be user, `pk_set` will be books ids. So the invalid keys is different
 depend the `instance` in signal function.
+
+```
+Book.users.through.m2m_cache_keys = {
+	# book is instance, so pk_set are user ids, used in signal book.add(users)
+    'Book': lambda ids: ['User:%s:books' % id for id in ids],
+	
+	# user is instance, so pk_set are book ids, used in signal user.add(books)
+    'TestUser': lambda ids: ['Book:%s:users' % id for id in ids],
+}
+```
 
 ## Tips:
 
