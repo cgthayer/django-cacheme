@@ -148,11 +148,11 @@ signal func will get this property value, add ':invalid' to it, and then invalid
 
 ```
 class Book(models.Model):
-	...
+    ...
 	
-	@property
-	def cache_key(self):
-		return "Book:%s" % self.id
+    @property
+    def cache_key(self):
+        return "Book:%s" % self.id
 ```
 
 This is enough for simple models, but for models include m2m field, we need some special rules. For example,
@@ -166,11 +166,13 @@ depend the `instance` in signal function.
 
 ```
 Book.users.through.m2m_cache_keys = {
-	# book is instance, so pk_set are user ids, used in signal book.add(users)
+
+    # book is instance, so pk_set are user ids, used in signal book.add(users)
     'Book': lambda ids: ['User:%s:books' % id for id in ids],
 	
-	# user is instance, so pk_set are book ids, used in signal user.add(books)
+    # user is instance, so pk_set are book ids, used in signal user.add(books)
     'TestUser': lambda ids: ['Book:%s:users' % id for id in ids],
+    
 }
 ```
 
