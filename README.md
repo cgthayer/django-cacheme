@@ -94,10 +94,9 @@ the fact that cache is very complicated, the automatic way may cause problems. A
 is just one line code, we can't do a lot on that, so sometimes need to find another way.
 
 One solution is not cache the original query, but cache the final results we want, for example
-the api results. This can give us more flexibility.
+the api results. This can give us more flexibility. Also make cache structure more clear.
 
-Now considering you have a serializer to serializer models to json results. This serialzer may have
-many fields, for example:
+Consider this serializer:
 
 ```
 Class BookSerializer(object):
