@@ -127,8 +127,6 @@ And when signal is called, all members in the model instance invalid key will be
 
 * `tag`: string, default func name. using tag to get cache instance, then get all keys under that tag.
 
-* `timeout`: set ttl for this key, if key contains '>', for example `Users:123>friends`, ttl will be set on main key `Users:123`
-
   ```
   from cacheme import cacheme_tags
   
@@ -143,6 +141,8 @@ And when signal is called, all members in the model instance invalid key will be
 
 * `skip`: boolean or callable, default False. If value or callable value return true, will skip cache. For example,
 you can cache result if request param has user, but return None directly, if no user.
+* `timeout`: set ttl for this key, if key contains '>', for example `Users:123>friends`, ttl will be set on main key `Users:123`
+
 
 
 #### - Model property/attribute
