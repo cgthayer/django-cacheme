@@ -94,6 +94,10 @@ class CacheMe(object):
     def keys(self, val):
         self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + self.tag, val)
 
+    def invalid_all(self):
+        self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', *self.keys)
+        self.conn.unlink(CACHEME.REDIS_CACHE_PREFIX + self.tag)
+
     def get_result_from_func(self, args, kwargs, key):
         if self.miss:
             self.miss(key, self.container)

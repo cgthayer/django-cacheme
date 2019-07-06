@@ -136,6 +136,9 @@ And when signal is called, all members in the model instance invalid key will be
   
   # get all keys
   keys = instance.keys
+  
+  # invalid all keys
+  instance.invalid_all()
   ```
 
 * `skip`: boolean or callable, default False. If value or callable value return true, will skip cache. For example,

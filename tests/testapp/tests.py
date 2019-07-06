@@ -171,13 +171,15 @@ class CacheTestCase(TestCase):
     def cache_inst_3(self):
         return 'test'
 
-    def test_instances(self):
+    def test_tags(self):
         self.cache_inst_1()
         self.cache_inst_2()
         self.cache_inst_3()
         self.assertEqual(cacheme_tags['cache_inst_1'].keys, {b'TEST:INST:1'})
         self.assertEqual(cacheme_tags['test_instance_sec'].keys, {b'TEST:INST:2'})
         self.assertEqual(cacheme_tags['three'].keys, {b'TEST:INST:3'})
+        cacheme_tags['three'].invalid_all()
+        self.assertEqual(cacheme_tags['three'].keys, set())
 
     def test_invalidation_model(self):
         conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
