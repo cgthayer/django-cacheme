@@ -9,7 +9,7 @@ setup(
     author="Yiling",
     author_email="njjyl723@gmail.com",
     license="BSD-3-Clause",
-    version='v0.0.4',
+    version='v0.0.5',
     packages=[
         "django_cacheme",
     ],
