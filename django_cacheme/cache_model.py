@@ -19,7 +19,7 @@ class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
     deleted = key_prefix + ':delete'
 
-    def __init__(self, key, invalid_keys=None, invalid_models=(), invalid_m2m_models=(), hit=None, miss=None, tag=None, skip=False):
+    def __init__(self, key, invalid_keys=None, invalid_models=(), invalid_m2m_models=(), hit=None, miss=None, tag=None, skip=False, timeout=None):
         if not CACHEME.ENABLE_CACHE:
             return
         self.key = key
@@ -30,6 +30,7 @@ class CacheMe(object):
         self.miss = miss
         self.tag = tag
         self.skip = skip
+        self.timeout = timeout
 
         self.conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
         self.link()
@@ -121,7 +122,10 @@ class CacheMe(object):
         self.keys = key
         value = pickle.dumps(value)
         key, field = split_key(key)
-        return self.conn.hset(key, field, value)
+        result = self.conn.hset(key, field, value)
+        if self.timeout:
+            self.conn.expire(key, self.timeout)
+        return result
 
     def push_key(self, key, value):
         return self.conn.sadd(key, value)

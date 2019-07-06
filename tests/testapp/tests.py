@@ -1,4 +1,5 @@
 import pickle
+import time
 
 import redis
 from unittest.mock import MagicMock
@@ -228,3 +229,16 @@ class CacheTestCase(TestCase):
 
         result = self.cache_skip_callable({'test': 6})
         self.assertEqual(result['result'], 6)
+
+    @cacheme(
+        key=lambda c: "CACHE:TO",
+        timeout=1
+    )
+    def cache_timeout(self, n):
+        return n
+
+    def test_time_out(self):
+        self.assertEqual(self.cache_timeout(1), 1)
+        self.assertEqual(self.cache_timeout(2), 1)
+        time.sleep(1.02)
+        self.assertEqual(self.cache_timeout(2), 2)
