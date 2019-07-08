@@ -82,6 +82,7 @@ class CacheMe(object):
                     self.hit(key, result, self.container)
                 result = result
 
+            self.container = None
             return result
 
         return wrapper
