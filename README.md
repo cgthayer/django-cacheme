@@ -208,3 +208,9 @@ then you can access `a` and `b` in your callable by `container.a`, `container.b`
 fields to json, then cache for that json should be invalid, there is no signal for this, so do it manually
 * also provide a simple admin page for invalidation pattern, just add this to your Django apps, and migrate,
 then create validations in admin. Syntax is same as redis scan patterns, for example, "*" means remove all.
+* How cacheme avoid thundering herds: if there is stale data, use stale data until new data fill in, if there is no stale data, just wait a short time
+and retry.
+* There is another thing you can do to avoid thundering herds, if you use cacheme in a class, for example a `Serializer`,
+and cache many methods in this class, and, order of these methods does not matter. Then you can make the order of call to theses methods randomly.
+For example, if your class has 10 cached methods, and 100 clients call this method same time, then some clients will call method1 first, some will call
+method2 first..., so they can run in parallel.
