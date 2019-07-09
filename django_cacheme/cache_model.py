@@ -76,14 +76,13 @@ class CacheMe(object):
 
             if result is None:
 
-                if self.in_progress(key):
+                if self.add_to_progress(key) == 0:  # already in progress
                     for i in range(CACHEME.THUNDERING_HERD_RETRY_COUNT):
                         time.sleep(CACHEME.THUNDERING_HERD_RETRY_TIME/1000)
                         result = self.get_key(key)
                         if result:
                             return result
 
-                self.add_to_progress(key)
                 result = self.get_result_from_func(args, kwargs, key)
                 self.set_result(key, result)
                 self.remove_from_progress(key)
@@ -173,11 +172,8 @@ class CacheMe(object):
             post_delete.connect(invalid_cache, model)
             m2m_changed.connect(invalid_cache, model)
 
-    def add_to_progress(self, key):
-        self.push_key(self.progress_key, key)
-
     def remove_from_progress(self, key):
         self.conn.srem(self.progress_key, key)
 
-    def in_progress(self, key):
-        return self.conn.sismember(self.progress_key, key)
+    def add_to_progress(self, key):
+        return self.conn.sadd(self.progress_key, key)
