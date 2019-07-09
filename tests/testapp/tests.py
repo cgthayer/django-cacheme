@@ -66,7 +66,7 @@ class CacheTestCase(TestCase):
         # lazy invalid, so if we get value directly, still old value
         result = conn.hget(settings.CACHEME['REDIS_CACHE_PREFIX'] + 'Test:123', 'base')
         self.assertEqual(pickle.loads(result), expect)
-        deletes = conn.smembers(settings.CACHEME['REDIS_CACHE_PREFIX'] + ':delete')
+        deletes = conn.smembers(settings.CACHEME['REDIS_CACHE_PREFIX'] + 'delete')
         self.assertTrue(b'TEST:Test:123' in deletes)
 
         expect['check'] = 2

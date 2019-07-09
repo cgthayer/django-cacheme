@@ -26,7 +26,7 @@ def invalid_keys_in_set(key, conn=None):
     key = CACHEME.REDIS_CACHE_PREFIX + key + ':invalid'
     invalid_keys = conn.smembers(key)
     if invalid_keys:
-        conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', *invalid_keys)
+        conn.sadd(CACHEME.REDIS_CACHE_PREFIX + 'delete', *invalid_keys)
 
 
 def invalid_cache(sender, instance, created=False, **kwargs):

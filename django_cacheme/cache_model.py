@@ -18,7 +18,7 @@ cacheme_tags = dict()
 
 class CacheMe(object):
     key_prefix = CACHEME.REDIS_CACHE_PREFIX
-    deleted = key_prefix + ':delete'
+    deleted = key_prefix + 'delete'
 
     def __init__(self, key, invalid_keys=None, invalid_models=(), invalid_m2m_models=(), hit=None, miss=None, tag=None, skip=False, timeout=None):
         if not CACHEME.ENABLE_CACHE:
@@ -108,7 +108,7 @@ class CacheMe(object):
         self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + self.tag, val)
 
     def invalid_all(self):
-        self.conn.sadd(CACHEME.REDIS_CACHE_PREFIX + ':delete', *self.keys)
+        self.conn.sadd(self.deleted, *self.keys)
         self.conn.unlink(CACHEME.REDIS_CACHE_PREFIX + self.tag)
 
     def get_result_from_func(self, args, kwargs, key):
