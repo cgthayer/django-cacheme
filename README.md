@@ -93,12 +93,10 @@ members from this key.
 
 ## Introduction
 
-Some packages automatically cache Django queries, they are simple to use, but given
-the fact that cache is very complicated, the automatic way may cause problems. Also, query in Django
-is just one line code, we can't do a lot on that, so sometimes need to find another way.
-
-One solution is not cache the original query, but cache the final results we want, for example
-the api results. This can give us more flexibility. Also make cache structure more clear.
+For complicated page or API, you may need to fetch data from a variety of sources such as MySQL databases,
+HDFS installations, some machine learning engines or your backend services.
+This heterogeneity requires a flexible caching strategy able to store data from disparate sources.
+And cacheme or memoize can help you.
 
 Consider this serializer:
 
