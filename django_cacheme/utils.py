@@ -4,7 +4,9 @@ from django_redis import get_redis_connection
 
 CACHEME = {
     'REDIS_CACHE_PREFIX': 'CM',  # key prefix for cache
-    'REDIS_CACHE_SCAN_COUNT': 10
+    'REDIS_CACHE_SCAN_COUNT': 10,
+    'THUNDERING_HERD_RETRY_COUNT': 5,
+    'THUNDERING_HERD_RETRY_TIME': 20
 }
 
 CACHEME.update(getattr(settings, 'CACHEME', {}))

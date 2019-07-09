@@ -1,3 +1,4 @@
+import time
 import pickle
 import datetime
 import logging
@@ -31,6 +32,7 @@ class CacheMe(object):
         self.tag = tag
         self.skip = skip
         self.timeout = timeout
+        self.progress_key = self.key_prefix + 'progress'
 
         self.conn = get_redis_connection(CACHEME.REDIS_CACHE_ALIAS)
         self.link()
@@ -73,8 +75,18 @@ class CacheMe(object):
             result = self.get_key(key)
 
             if result is None:
+
+                if self.in_progress(key):
+                    for i in range(CACHEME.THUNDERING_HERD_RETRY_COUNT):
+                        time.sleep(CACHEME.THUNDERING_HERD_RETRY_TIME/1000)
+                        result = self.get_key(key)
+                        if result:
+                            return result
+
+                self.add_to_progress(key)
                 result = self.get_result_from_func(args, kwargs, key)
                 self.set_result(key, result)
+                self.remove_from_progress(key)
                 self.container.cacheme_result = result
                 self.add_to_invalid_list(key, args, kwargs)
             else:
@@ -160,3 +172,12 @@ class CacheMe(object):
             post_save.connect(invalid_cache, model)
             post_delete.connect(invalid_cache, model)
             m2m_changed.connect(invalid_cache, model)
+
+    def add_to_progress(self, key):
+        self.push_key(self.progress_key, key)
+
+    def remove_from_progress(self, key):
+        self.conn.srem(self.progress_key, key)
+
+    def in_progress(self, key):
+        return self.conn.sismember(self.progress_key, key)

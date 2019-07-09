@@ -1,5 +1,6 @@
 import pickle
 import time
+import datetime
 
 import redis
 from unittest.mock import MagicMock
@@ -244,3 +245,26 @@ class CacheTestCase(TestCase):
         self.assertEqual(self.cache_timeout(2), 1)
         time.sleep(1.02)
         self.assertEqual(self.cache_timeout(2), 2)
+
+    @cacheme(
+        key=lambda c: "CACHE:TH",
+    )
+    def cache_th(self, n):
+        return n
+
+    def test_key_missing(self):
+        conn = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
+        conn.sadd('TEST:progress', 'TEST:CACHE:TH')
+        start = datetime.datetime.now()
+        result = self.cache_th(12)
+        end = datetime.datetime.now()
+        delta = (end - start).total_seconds() * 1000
+        self.assertEqual(result, 12)
+        self.assertTrue(delta > 50)
+
+        conn.sadd('TEST:progress', 'TEST:CACHE:TH')
+        start = datetime.datetime.now()
+        result = self.cache_th(15)
+        end = datetime.datetime.now()
+        self.assertEqual(result, 12)
+        self.assertTrue(delta > 50)
