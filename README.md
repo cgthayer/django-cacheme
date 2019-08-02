@@ -176,9 +176,9 @@ class Book(models.Model):
 ```
 
 This is enough for simple models, but for models include m2m field, we need some special rules. For example,
-`Book` model has a m2m field to `User`, and if we do: `book.add(users)`, We have two update, first, book.users changed,
+`Book` model has a m2m field to `User`, and if we do: `book.users.add(users)`, We have two update, first, book.users changed,
 because a new user is add to this. Second, user.books also change, because this user has a new book. And on the other side,
-if we do `user.add(books)`, also get two updates.
+if we do `user.books.add(books)`, also get two updates.
 So if you take a look on [models.py](../master/tests/testapp/models.py), you will notice I add a `m2m_cache_keys` dict to through model,
 that's because both `book.add()` and `user.add()` will trigger the [m2m invalid signal](https://docs.djangoproject.com/en/2.2/ref/signals/#m2m-changed), but the first one, signal `instance` will be book, and
 `pk_set` will be users ids, and the second one, signal `instance` will be user, `pk_set` will be books ids. So the invalid keys is different
@@ -187,10 +187,10 @@ depend the `instance` in signal function.
 ```
 Book.users.through.m2m_cache_keys = {
 
-    # book is instance, so pk_set are user ids, used in signal book.add(users)
+    # book is instance, so pk_set are user ids, used in signal book.users.add(users)
     'Book': lambda ids: ['User:%s:books' % id for id in ids],
 	
-    # user is instance, so pk_set are book ids, used in signal user.add(books)
+    # user is instance, so pk_set are book ids, used in signal user.books.add(books)
     'TestUser': lambda ids: ['Book:%s:users' % id for id in ids],
     
 }
