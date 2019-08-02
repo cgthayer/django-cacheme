@@ -268,3 +268,27 @@ class CacheTestCase(TestCase):
         end = datetime.datetime.now()
         self.assertEqual(result, 12)
         self.assertTrue(delta > 50)
+
+    @cacheme(
+        key=lambda c: "CACHE:RESULT",
+        invalid_keys=lambda c: ["Book:%s" % id for id in c.cacheme_result],
+        invalid_models=[Book]
+
+    )
+    def cache_result(self, book):
+        return [book.id]
+
+    def test_invalid_cacheme_result(self):
+        book1 = Book.objects.create(name='b1')
+        r = self.cache_result(book1)
+        self.assertEqual(r, [book1.id])
+
+        book2 = Book.objects.create(name='b2')
+        r = self.cache_result(book2)
+        self.assertEqual(r, [book1.id])
+
+        book1.name = 'bn'
+        book1.save()
+
+        r = self.cache_result(book2)
+        self.assertEqual(r, [book2.id])

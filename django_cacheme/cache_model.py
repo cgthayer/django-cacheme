@@ -69,6 +69,7 @@ class CacheMe(object):
             if self.conn.srem(self.deleted, key):
                 result = self.function(*args, **kwargs)
                 self.set_result(key, result)
+                self.container.cacheme_result = result
                 self.add_to_invalid_list(key, args, kwargs)
                 return result
 
