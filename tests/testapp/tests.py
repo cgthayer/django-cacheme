@@ -12,6 +12,11 @@ from .models import TestUser, Book
 from django_cacheme import cacheme, cacheme_tags
 from django_cacheme.models import Invalidation
 
+from django.contrib.auth.models import User
+from django.contrib.admin.sites import AdminSite
+from django.test import RequestFactory
+from django_cacheme.admin import InvalidationAdmin
+
 r = redis.Redis()
 
 
@@ -19,11 +24,13 @@ hit = MagicMock()
 miss = MagicMock()
 
 
-class CacheTestCase(TestCase):
-
+class BaseTestCase(TestCase):
     def tearDown(self):
         connection = get_redis_connection(settings.CACHEME['REDIS_CACHE_ALIAS'])
         connection.flushdb(settings.CACHEME['REDIS_CACHE_TEST_DB'])
+
+
+class CacheTestCase(BaseTestCase):
 
     @cacheme(
         key=lambda c: "Test:123",
@@ -292,3 +299,35 @@ class CacheTestCase(TestCase):
 
         r = self.cache_result(book2)
         self.assertEqual(r, [book2.id])
+
+
+class AdminTestCase(BaseTestCase):
+
+    @cacheme(
+        key=lambda c: 'testme',
+        tag='test'
+    )
+    def cache_test(self):
+        return 'test'
+
+    def test_admin(self):
+        admin = InvalidationAdmin(model=Invalidation, admin_site=AdminSite())
+        request = RequestFactory()
+        request.user = User.objects.create(username='test_admin')
+
+        form = admin.get_form(request=request)
+        self.assertEqual(form.declared_fields['invalid_tags'].initial, None)
+        self.assertEqual(form.declared_fields['invalid_tags'].disabled, False)
+
+        self.cache_test()
+        obj = Invalidation.objects.create(tags='test')
+        form = admin.get_form(request=request, obj=obj)
+
+        self.assertEqual(form.declared_fields['invalid_tags'].initial, ['test'])
+        self.assertEqual(form.declared_fields['invalid_tags'].disabled, True)
+
+        obj2 = Invalidation(id=999)
+        form = admin.get_form(request=request, obj=None)({'pattern': 'aaa', 'invalid_tags': ['test']})
+        self.assertTrue(form.is_valid())
+        admin.save_model(request, obj2, form, False)
+        self.assertEqual(Invalidation.objects.get(id=999).tags, 'test')
